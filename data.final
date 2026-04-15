@@ -1,0 +1,106 @@
+# ==========================================================
+# ANÁLISIS DE HÁBITOS DE ESTUDIO Y ESTRÉS ACADÉMICO
+# Basado en Clase 1, 2 y 3 
+# Universidad de Guanajuato
+# ==========================================================
+
+install.packages("ggplot2")
+install.packages("corrplot")
+
+library("ggplot2")                 
+library("corrplot")
+
+# ----------------------------------------------------------
+# (1) DATA FRAME 
+# ----------------------------------------------------------
+
+encuesta <- data.frame(
+  estres = c(9,7,8,8,9,10,5,4,7,10,6,9,8,2,3,6,9,10,3,8,4,10,5,8,2,9,7,8,8,9,10,5,7),
+  horas_estudio = c(14,2,3,3,8,2,2,7,3,6,2.5,6,3,3,2,5.5,6,3.5,4,2,7,8,3,2,5,2.5,3,4,4,7,4,2,3),
+  horas_sueno = c(6,7,0,7,9,4,5,5,7,5.8,7,5,6,8,7,7,5,4.5,8,6,7.5,4,6.5,5.5,8.5,6,7,4,5,5,5,5,7),
+  asignaturas = c(10,3,1,4,9,3,11,7,6,2,9,1,6,5,5,4,6,3,5,4,5,2,6,3,4,8,5,7,6,6,6,7,7),
+  actividad_fisica = c(0,4,0,3,7,1,4,2,2,2,3,2,2,4,3,3,1,1,5,2,4,0,3,1,6,0,4,1,3,1,2,4,6),
+  redes_sociales = c(1.5,5,6,5,3,6,6,3,5,1,3,2,7,8,6,1.5,4,2,2.5,5,1,3,6,2.5,1,1.5,4.5,8,5,5,6,6,4)
+)
+View (encuesta)
+modelo <-glm(estres ~ horas_estudio + horas_sueno,
+             data=encuesta,
+            )
+summary(modelo)
+
+# ----------------------------------------------------------
+# (2) SELECCIONAR VARIABLES 
+# ----------------------------------------------------------
+# Variable dependiente (Y): estres
+# Variables independientes (X): las demás
+
+datos <- data.frame  
+  (estres~horas_estudio~ horas_sueno)
+head(datos)
+
+# ----------------------------------------------------------
+# (3) GRÁFICOS 
+# ----------------------------------------------------------
+
+# Gráfico 1: Estrés vs Horas de sueño—------
+ggplot(encuesta, aes(x = horas_sueno, y = estres)) +
+  geom_point(size = 3, color = "blue") +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(title = "Relación entre horas de sueño y estrés académico",
+       x = "Horas de sueño por noche",
+       y = "Nivel de estrés (0-10)") +
+  theme_minimal()
+ 
+# Gráfico 2: Estrés vs Horas de estudio—-----
+ggplot(encuesta, aes(x = horas_estudio, y = estres)) +
+  geom_point(size = 3, color = "darkgreen") +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(title = "Relación entre horas de estudio y estrés académico",
+       x = "Horas de estudio al día",
+       y = "Nivel de estrés (0-10)") +
+  theme_minimal()
+
+# ----------------------------------------------------------
+# (4) MATRIZ DE CORRELACIÓN 
+# ----------------------------------------------------------
+
+datos_cor <- encuesta[, c("estres", "horas_estudio", "horas_sueno", 
+                          "asignaturas", "actividad_fisica", "redes_sociales")]
+
+correlaciones <- round(cor(datos_cor, use = "pairwise.complete.obs"), 2)
+print(correlaciones)
+
+corrplot(correlaciones, method = "color", type = "upper", 
+         addCoef.col = "black", tl.cex = 0.8)
+
+# ----------------------------------------------------------
+# (5) REGRESIÓN LINEAL MÚLTIPLE 
+# ----------------------------------------------------------
+# Modelo: estrés ~ horas_estudio + horas_sueno 
+
+modelo <- lm(estres ~ horas_estudio + horas_sueno, 
+             data = encuesta)
+summary(modelo)
+modelo_completo <- lm(estres ~ horas_estudio + horas_sueno,
+                      data = encuesta)
+summary(modelo_completo)
+
+# ----------------------------------------------------------
+# (6) INTERPRETACION
+# ----------------------------------------------------------
+
+# ¿Cuál variable se correlaciona más con el estrés?
+# =Actividad física (r = -0.57). Es la correlación más fuerte, seguida de horas de sueño (r = -0.48). Ambas son negativas: más ejercicio y más sueño = menos estrés.
+
+# ¿La correlación que puedo encontrar son?
+# =Las correlaciones más importantes son negativas: actividad física (-0.57) y horas #de sueño (-0.48) son las que más se asocian con menores niveles de estrés. La #variable horas de estudio tiene una correlación positiva muy débil (+0.21), y redes #sociales prácticamente no se correlaciona con el estrés (-0.08).
+
+# ¿El modelo de regresión es significativo?
+# =SÍ, es significativo. p-valor del modelo = 0.006662 (< 0.05) ✅
+#horas_sueño = significativa (p = 0.00346) ✅
+#horas_estudio = NO significativa (p = 0.14364) ❌
+#Interpretación: Por cada hora extra de sueño, el estrés disminuye 0.7 puntos (en escala #0-10). El modelo explica el 28.4% del estrés (R² = 0.284).
+
+#===========================================================
+# FIN
+#===========================================================
